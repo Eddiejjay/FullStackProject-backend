@@ -1,0 +1,9 @@
+POST  http://localhost:3003/api/players
+content-type: application/json
+
+
+
+{
+        "player":"Keissi" 
+         
+}
