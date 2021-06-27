@@ -91,6 +91,17 @@ await Points.findByIdAndRemove(id)
 })
 res.status(204).end()
 })
+
+app.put('/api/points/:id', async (req,res) => {
+  const id = req.params.id
+  const points = req.body
+const updatedPoints = await Points.findByIdAndUpdate(id, points,  { new: true })
+.catch((error) => {
+  res.status(400).send({ error: error.message })
+})
+res.json(updatedPoints)
+})
+
   
 
 
