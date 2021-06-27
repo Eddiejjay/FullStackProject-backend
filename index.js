@@ -30,6 +30,12 @@ app.get('/api/points',async (req, res) => {
   res.json(points)
   })
 
+  // app.get('/api/points/:id',async (req, res) => {
+
+  //   const points = await Points.find({})
+  //   console.log('app.get /api/points', points)
+  //   res.json(points)
+  //   })
 
   // app.get('/api/players', async (req, res) => {
 
@@ -76,7 +82,16 @@ app.get('/api/players', async (req, res) => {
 })
 
 
-
+app.delete('/api/points/:id', async (req,res) => {
+const id = req.params.id
+// const pointsToDelete = await Points.findById(id)
+await Points.findByIdAndRemove(id)
+.catch((error) => {
+  res.status(400).send({ error: error.message })
+})
+res.status(204).end()
+})
+  
 
 
 const PORT = 3003
