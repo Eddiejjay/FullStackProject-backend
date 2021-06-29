@@ -4,7 +4,10 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const Player = require('./models/player')
 const Points = require('./models/points')
+const User = require('./models/user')
 const { response } = require('express')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 app.use(cors())
 app.use(express.json())
 
@@ -102,7 +105,72 @@ const updatedPoints = await Points.findByIdAndUpdate(id, points,  { new: true })
 res.json(updatedPoints)
 })
 
+
+// LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN  LOGIN 
+app.post('/api/login', async (request, response) => {
+  const body = request.body
+  const user = await User.findOne({ username: body.username })
+  const passwordCorrect = user === null
+    ? false
+    : await bcrypt.compare(body.password, user.passwordHash)
   
+  if (!(user)) {
+    return response.status(401).json({
+      error: 'invalid username'
+    } 
+    )
+  } else if ( (!(passwordCorrect))) {
+    return response.status(401).json({
+      error: 'invalid password'
+    } 
+    )}
+
+  const userForToken = {
+    username: user.username,
+    id: user._id,
+  }
+  
+  
+  const token = jwt.sign(userForToken, "koooooo")
+  response
+    .status(200)
+    .send({ token, username: user.username, name: user.name })
+})
+
+//USERS USERS USERS USERS USERS USERS USERS USERS USERS USERS USERS USERS 
+
+
+app.post('/api/users', async (request, response) => {
+
+  const body = request.body
+
+  if ( body.password === undefined) { 
+    return response.status(400).json({ error: 'you forget password' })
+  }
+
+  else if (body.password.length < 3) {
+    return response.status(400).json({ error: 'password is too short, minimum 3' })
+  }
+
+
+  const saltRounds = 10
+  const passwordHash = await bcrypt.hash(body.password, saltRounds)
+
+  const user = new User({
+    username: body.username,
+    passwordHash,
+  })
+    
+  const savedUser = await user.save()
+    .catch((error) => {
+      response.status(400).send({ error: error.message })
+    })
+  response.json(savedUser)
+})
+
+
+
+
 
 
 const PORT = 3003
@@ -111,128 +179,5 @@ app.listen(PORT, () => {
 })
 
 
-
-// const points = [
-  // {
-  //   "points": {
-  //     "ykkoset": 1,
-  //     "kakkoset": 2,
-  //     "kolmoset": 0,
-  //     "neloset": 0,
-  //     "vitoset": 0,
-  //     "kutoset": 0,
-  //     "valisumma": 0,
-  //     "bonus": 0,
-  //     "pari": 0,
-  //     "kaksiparia": 0,
-  //     "kolmesamaa": 0,
-  //     "neljasamaa": 0,
-  //     "pikkusuora": 0,
-  //     "isosuora": 0,
-  //     "tayskasi": 0,
-  //     "sattuma": 0,
-  //     "yatzy": 0,
-  //     "pisteet": 0
-  //   },
-  //   "player": "Keissi",
-  //   "id": 1
-  // },
-  // {
-  //   "points": {
-  //     "ykkoset": 1,
-  //     "kakkoset": 2,
-  //     "kolmoset": 0,
-  //     "neloset": 0,
-  //     "vitoset": 0,
-  //     "kutoset": 0,
-  //     "valisumma": 0,
-  //     "bonus": 0,
-  //     "pari": 0,
-  //     "kaksiparia": 0,
-  //     "kolmesamaa": 0,
-  //     "neljasamaa": 0,
-  //     "pikkusuora": 0,
-  //     "isosuora": 0,
-  //     "tayskasi": 0,
-  //     "sattuma": 0,
-  //     "yatzy": 0,
-  //     "pisteet": 0
-  //   },
-  //   "player": "Kale",
-  //   "id": 2
-  // },
-  // {
-  //   "points": {
-  //     "ykkoset": 1,
-  //     "kakkoset": 2,
-  //     "kolmoset": 0,
-  //     "neloset": 0,
-  //     "vitoset": 0,
-  //     "kutoset": 0,
-  //     "valisumma": 0,
-  //     "bonus": 0,
-  //     "pari": 0,
-  //     "kaksiparia": 0,
-  //     "kolmesamaa": 0,
-  //     "neljasamaa": 0,
-  //     "pikkusuora": 0,
-  //     "isosuora": 0,
-  //     "tayskasi": 0,
-  //     "sattuma": 0,
-  //     "yatzy": 0,
-  //     "pisteet": 0
-  //   },
-  //   "player": "Jokke",
-  //   "id": 3
-  // },
-  // {
-  //   "points": {
-  //     "ykkoset": 1,
-  //     "kakkoset": 2,
-  //     "kolmoset": 0,
-  //     "neloset": 0,
-  //     "vitoset": 0,
-  //     "kutoset": 0,
-  //     "valisumma": 0,
-  //     "bonus": 0,
-  //     "pari": 0,
-  //     "kaksiparia": 0,
-  //     "kolmesamaa": 0,
-  //     "neljasamaa": 0,
-  //     "pikkusuora": 0,
-  //     "isosuora": 0,
-  //     "tayskasi": 0,
-  //     "sattuma": 0,
-  //     "yatzy": 0,
-  //     "pisteet": 0
-  //   },
-  //   "player": "Kicke",
-  //   "id": 4
-  // },
-  // {
-  //   "points": {
-  //     "ykkoset": 1,
-  //     "kakkoset": 2,
-  //     "kolmoset": 0,
-  //     "neloset": 0,
-  //     "vitoset": 0,
-  //     "kutoset": 0,
-  //     "valisumma": 0,
-  //     "bonus": 0,
-  //     "pari": 0,
-  //     "kaksiparia": 0,
-  //     "kolmesamaa": 0,
-  //     "neljasamaa": 0,
-  //     "pikkusuora": 0,
-  //     "isosuora": 0,
-  //     "tayskasi": 0,
-  //     "sattuma": 0,
-  //     "yatzy": 0,
-  //     "pisteet": 0
-  //   },
-  //   "player": "Himplaaja",
-  //   "id": 5
-  // }
-// ]
 
 
