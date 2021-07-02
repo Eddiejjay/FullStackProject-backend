@@ -4,6 +4,6 @@ content-type: application/json
 
 
 {
-        "player":"Haisuliini2" 
+        "player":"Daddy" 
          
 }

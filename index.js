@@ -8,8 +8,13 @@ const User = require('./models/user')
 const { response } = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const io = require('socket.io')(3003)
 app.use(cors())
 app.use(express.json())
+
+io.on('connection', socket => {console.log(socket.id)
+})
+
 
 const url = 'mongodb+srv://Jorma:jorma123@hubbeliinosclusteriinos.upe3w.mongodb.net/YatzyApp?retryWrites=true&w=majority'
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
