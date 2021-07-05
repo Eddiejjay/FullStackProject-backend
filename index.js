@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+var http = require('http').createServer(app);
 const cors = require('cors')
 const mongoose = require('mongoose')
 const Player = require('./models/player')
@@ -8,12 +9,31 @@ const User = require('./models/user')
 const { response } = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const io = require('socket.io')(3003)
+
+const PORT = 3003
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
+
 app.use(cors())
 app.use(express.json())
 
-io.on('connection', socket => {console.log(socket.id)
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: ['http://localhost:3000']
+  }
 })
+io.on('connection', socket => 
+{console.log('socket yooo', socket.id)
+
+socket.on('add-online-user', (username) => {
+  console.log('servulta vastaanotto addOnlineUser',username)
+    io.emit('online-user-back-to-all', username)
+
+})
+})
+
 
 
 const url = 'mongodb+srv://Jorma:jorma123@hubbeliinosclusteriinos.upe3w.mongodb.net/YatzyApp?retryWrites=true&w=majority'
@@ -34,7 +54,6 @@ app.get('/', (req, res) => {
 app.get('/api/points',async (req, res) => {
 
   const points = await Points.find({})
-  console.log('app.get /api/points', points)
   res.json(points)
   })
 
@@ -55,7 +74,6 @@ app.get('/api/points',async (req, res) => {
   
 app.post('/api/points', async (req, res) => {
     const body = req.body
-    console.log('Post points body', body)
     const pointObject = new Points ({...body})
     const savedPointObject = await pointObject.save()
     .catch((error) => {
@@ -67,7 +85,6 @@ app.post('/api/points', async (req, res) => {
 
 app.post('/api/players', async (req, res) => {
   const body = req.body
-  console.log('body app.postista',body)
 
   const player = new Player({
     player : body.player
@@ -84,7 +101,6 @@ app.post('/api/players', async (req, res) => {
 app.get('/api/players', async (req, res) => {
 
   const players = await Player.find({})
-  console.log(players)
   res.json(players)
 
 })
@@ -177,11 +193,6 @@ app.post('/api/users', async (request, response) => {
 
 
 
-
-const PORT = 3003
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
 
 
 
