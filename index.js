@@ -27,12 +27,29 @@ const io = require('socket.io')(server, {
 io.on('connection', socket => 
 {console.log('socket yooo', socket.id)
 
+socket.on("disconnect", (reason) => {
+  io.emit('delete-user-from-players-in-lobby', socket.id)
+  console.log('socket id ', socket.id, 'disconnected')
+});
 socket.on('add-online-user', (username) => {
   console.log('servulta vastaanotto addOnlineUser',username)
     io.emit('online-user-back-to-all', username)
 
 })
+socket.on('chat-message',(message, username) => {
+  console.log('Message servulta:',`${username}: ${message}`)
+  socket.broadcast.emit('chat-message-back-to-all-sockets', `${username}: ${message}`)
 })
+
+socket.on('joined-yatzyroom',(username) => {
+  io.emit("joined-username-back-from-server", username)
+  console.log('joined-yatzyroom username', username)
+})
+})
+
+// io.on('disconnect' ,socket => {
+//   socket.disconnect(true)
+//   console.log('socket', socket.id ,'disconnected')})
 
 
 
@@ -190,10 +207,4 @@ app.post('/api/users', async (request, response) => {
 })
 
 
-
-
-
-
-
-
-
+//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER//ONLINEUSER
