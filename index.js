@@ -24,33 +24,65 @@ const io = require('socket.io')(server, {
     origin: ['http://localhost:3000']
   }
 })
-io.on('connection', socket => 
-{console.log('socket yooo', socket.id)
 
+const  getSockets = async () => {
+  const sockets = await io.in("private").fetchSockets()
+  return sockets
+}
+
+const players = []
+
+io.on('connection', socket => {
+console.log('socket yooo', socket.id)
 socket.on("disconnect", (reason) => {
   io.emit('delete-user-from-players-in-lobby', socket.id)
   console.log('socket id ', socket.id, 'disconnected')
 });
 socket.on('add-online-user', (username) => {
-  console.log('servulta vastaanotto addOnlineUser',username)
+  socket.data.username = username
     io.emit('online-user-back-to-all', username)
 
 })
+socket.on('add-private-room-user', (username) => {
+  socket.data.username = username
+  players.push(username)
+  console.log(players)
+    io.emit('players-in-private-yatzyroom', players)
+
+}) 
+
 socket.on('chat-message',(message, username) => {
-  console.log('Message servulta:',`${username}: ${message}`)
   socket.broadcast.emit('chat-message-back-to-all-sockets', `${username}: ${message}`)
 })
 
-socket.on('joined-yatzyroom',(username) => {
+socket.on('private-chat-message',(privateRoom,message, username) => {
+  socket.to(`${privateRoom}`).emit('chat-message-back-to-privatechat', `${username}: ${message}`)
+})
+
+socket.on('turn-ready', (player, combination, points) => {
+console.log('points socketin seruvlta', player, combination, points)
+socket.broadcast.emit('turns-stats', player, combination, points)
+
+})
+
+
+socket.on( 'joined-yatzyroom' ,(username) => {
+  socket.join("YatzyRoom");
   io.emit("joined-username-back-from-server", username)
   console.log('joined-yatzyroom username', username)
-})
+  console.log('socket.rooms clog',socket.rooms);
+  // io.emit('sockets-yatzy-room',sockets)
+
 })
 
-// io.on('disconnect' ,socket => {
-//   socket.disconnect(true)
-//   console.log('socket', socket.id ,'disconnected')})
+socket.on('joinPrivateYatzyRoom', (inputValue) => {
+  socket.join(inputValue);
+  console.log('socket.rooms clog',socket.rooms);
+  io.emit('private-room', inputValue)
+  
 
+})
+})
 
 
 const url = 'mongodb+srv://Jorma:jorma123@hubbeliinosclusteriinos.upe3w.mongodb.net/YatzyApp?retryWrites=true&w=majority'
@@ -132,6 +164,16 @@ await Points.findByIdAndRemove(id)
 })
 res.status(204).end()
 })
+
+app.delete('/api/players/:id', async (req,res) => {
+  const id = req.params.id
+  // const pointsToDelete = await Points.findById(id)
+  await Player.findByIdAndRemove(id)
+  .catch((error) => {
+    res.status(400).send({ error: error.message })
+  })
+  res.status(204).end()
+  })
 
 app.put('/api/points/:id', async (req,res) => {
   const id = req.params.id

@@ -1,0 +1,5 @@
+DELETE  http://localhost:3003/api/players/60df63edb896b81ede3b7e3a
+content-type: application/json
+
+
+
