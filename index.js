@@ -43,13 +43,21 @@ socket.on('add-online-user', (username) => {
     io.emit('online-user-back-to-all', username)
 
 })
+
 socket.on('add-private-room-user', (username) => {
   socket.data.username = username
   players.push(username)
   console.log(players)
-    io.emit('players-in-private-yatzyroom', players)
+    // io.emit('players-in-private-yatzyroom', players)
 
 }) 
+socket.on('give-private-players', () => {
+    io.emit('players-in-private-yatzyroom', players)
+    console.log('players server.emit', players)
+
+}) 
+
+
 
 socket.on('chat-message',(message, username) => {
   socket.broadcast.emit('chat-message-back-to-all-sockets', `${username}: ${message}`)
@@ -59,11 +67,16 @@ socket.on('private-chat-message',(privateRoom,message, username) => {
   socket.to(`${privateRoom}`).emit('chat-message-back-to-privatechat', `${username}: ${message}`)
 })
 
-socket.on('turn-ready', (player, combination, points) => {
+socket.on('turn-ready', (player, combination, points, turn, maxturns) => {
 console.log('points socketin seruvlta', player, combination, points)
-socket.broadcast.emit('turns-stats', player, combination, points)
+socket.broadcast.emit('turns-stats', player, combination, points, turn, maxturns)
 
 })
+
+socket.on('valisumma-calculation', (allPoints) => {
+  socket.broadcast.emit('valisummaPoints', allPoints)
+  
+  })
 
 
 socket.on( 'joined-yatzyroom' ,(username) => {
@@ -82,6 +95,19 @@ socket.on('joinPrivateYatzyRoom', (inputValue) => {
   
 
 })
+
+
+
+
+// TÄMÄ DICE VALUE PITÄISI SAADA NOPPAAN 
+//ELI PYÖRÄYTTÄÄ HALUTTU NOPPA JONKA VALUEKSI TÄMÄ ARVO 
+socket.on('dice-value', (value) => {
+  console.log('dice value from server12', value);
+  socket.broadcast.emit('dice-value-back-form-server', value)
+
+})
+  
+
 })
 
 
