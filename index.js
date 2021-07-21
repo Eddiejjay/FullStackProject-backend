@@ -38,14 +38,18 @@ const  getSockets = async () => {
   return sockets
 }
 
+const socketIdUserMap = {
 
-const players = []
+}
+let players = []
 // const [players, setPlayers] = useState([])
 
 io.on('connection', socket => {
 console.log('socket yooo', socket.id)
 socket.on("disconnect", (reason) => {
   io.emit('delete-user-from-players-in-lobby', socket.id)
+  players = players.filter(player => player !== socketIdUserMap[socket.id])
+  delete socketIdUserMap[socket.id];
   console.log('socket id ', socket.id, 'disconnected')
 });
 socket.on('add-online-user', (username) => {
@@ -56,7 +60,10 @@ socket.on('add-online-user', (username) => {
 
 socket.on('add-private-room-user', (username) => {
   socket.data.username = username
+  console.log('socket id servulta add-privateroom userista ', socket.id)
   players.push(username)
+  socketIdUserMap[socket.id] = username;
+  console.log('socketId usermap' ,socketIdUserMap)
   console.log(players)
     // io.emit('players-in-private-yatzyroom', players)
 
