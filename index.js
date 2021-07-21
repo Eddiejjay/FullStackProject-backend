@@ -9,11 +9,19 @@ const User = require('./models/user')
 const { response } = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+require('dotenv').config()
 
-const PORT = 3003
+// const PORT = 3003
+// const server = app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`)
+// })
+
+
+const PORT = process.env.PORT || 3003
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
 
 app.use(cors())
 app.use(express.json())
@@ -30,7 +38,9 @@ const  getSockets = async () => {
   return sockets
 }
 
+
 const players = []
+// const [players, setPlayers] = useState([])
 
 io.on('connection', socket => {
 console.log('socket yooo', socket.id)
@@ -60,8 +70,10 @@ socket.on('give-private-players', () => {
 
 
 socket.on('chat-message',(message, username) => {
+  console.log('chat-message-back.to.ala.sockets.server')
   socket.broadcast.emit('chat-message-back-to-all-sockets', `${username}: ${message}`)
 })
+
 
 socket.on('private-chat-message',(privateRoom,message, username) => {
   socket.to(`${privateRoom}`).emit('chat-message-back-to-privatechat', `${username}: ${message}`)
@@ -96,14 +108,24 @@ socket.on('joinPrivateYatzyRoom', (inputValue) => {
 
 })
 
+socket.on('new-private-yatzyroom', (user, pRoom) => {
+  socket.join(pRoom);
+  console.log('socket.rooms clog',socket.rooms);
+  io.emit('new-private-room-created', pRoom,user)
+  
+
+})
+
+
 
 
 
 // TÄMÄ DICE VALUE PITÄISI SAADA NOPPAAN 
 //ELI PYÖRÄYTTÄÄ HALUTTU NOPPA JONKA VALUEKSI TÄMÄ ARVO 
-socket.on('dice-value', (value) => {
+socket.on('dice-value', (value, diceNro) => {
   console.log('dice value from server12', value);
-  socket.broadcast.emit('dice-value-back-form-server', value)
+  console.log('dicevlaue and dice nro ', value, diceNro)
+  socket.broadcast.emit('dice-value-back-form-server', value, diceNro)
 
 })
   
@@ -111,7 +133,7 @@ socket.on('dice-value', (value) => {
 })
 
 
-const url = 'mongodb+srv://Jorma:jorma123@hubbeliinosclusteriinos.upe3w.mongodb.net/YatzyApp?retryWrites=true&w=majority'
+const url =  process.env.MONGODB_URI
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 .then(result => {
   console.log('Connected to database')
