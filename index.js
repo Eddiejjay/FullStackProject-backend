@@ -10,7 +10,7 @@ const { response } = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
-
+app.use(express.static('build'))
 // const PORT = 3003
 // const server = app.listen(PORT, () => {
 //   console.log(`Server running on port ${PORT}`)
