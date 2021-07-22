@@ -8,7 +8,8 @@ const Points = require('./models/points')
 const User = require('./models/user')
 const { response } = require('express')
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { truncateSync } = require('fs');
 require('dotenv').config()
 app.use(express.static('build'))
 // const PORT = 3003
@@ -44,14 +45,16 @@ const socketIdUserMap = {
 let players = []
 // const [players, setPlayers] = useState([])
 
-io.on('connection', socket => {
+const socket1 = io.on('connection', socket => {
 console.log('socket yooo', socket.id)
 socket.on("disconnect", (reason) => {
   io.emit('delete-user-from-players-in-lobby', socket.id)
   players = players.filter(player => player !== socketIdUserMap[socket.id])
   delete socketIdUserMap[socket.id];
   console.log('socket id ', socket.id, 'disconnected')
-});
+})
+
+
 socket.on('add-online-user', (username) => {
   socket.data.username = username
     io.emit('online-user-back-to-all', username)
@@ -61,10 +64,14 @@ socket.on('add-online-user', (username) => {
 socket.on('add-private-room-user', (username) => {
   socket.data.username = username
   console.log('socket id servulta add-privateroom userista ', socket.id)
+
+  if (players.indexOf(username) === -1) {
   players.push(username)
   socketIdUserMap[socket.id] = username;
   console.log('socketId usermap' ,socketIdUserMap)
-  console.log(players)
+  console.log(players) 
+  }
+  return
     // io.emit('players-in-private-yatzyroom', players)
 
 }) 
@@ -84,6 +91,7 @@ socket.on('chat-message',(message, username) => {
 
 socket.on('private-chat-message',(privateRoom,message, username) => {
   socket.to(`${privateRoom}`).emit('chat-message-back-to-privatechat', `${username}: ${message}`)
+  console.log('private message vastaan otto servulla')
 })
 
 socket.on('turn-ready', (player, combination, points, turn, maxturns) => {
@@ -96,7 +104,11 @@ socket.on('valisumma-calculation', (allPoints) => {
   socket.broadcast.emit('valisummaPoints', allPoints)
   
   })
-
+  socket.on('allPoints-calculation', (allPoints) => {
+    socket.broadcast.emit('allPoints', allPoints)
+    
+    })
+ 
 
 socket.on( 'joined-yatzyroom' ,(username) => {
   socket.join("YatzyRoom");
@@ -135,8 +147,19 @@ socket.on('dice-value', (value, diceNro) => {
   socket.broadcast.emit('dice-value-back-form-server', value, diceNro)
 
 })
-  
+socket.on('end-game', () => {
+io.emit('end-game-signal-from-server')
+players = []
+console.log('Players zerod in server')
+})
 
+
+socket.on('player-log-out',  (player) => {
+  let filteredPlayers = players.filter(element => element !== player)
+  players = filteredPlayers
+  console.log('Player remover ', player)
+
+  })
 })
 
 
