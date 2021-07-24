@@ -2,10 +2,7 @@ const mongoose = require('mongoose')
 
 const playerSchema = new mongoose.Schema({
     player: String
-
- 
 })
-       
        
 playerSchema.set('toJSON', {
   transform: (document, returnedObject) => {
@@ -14,7 +11,6 @@ playerSchema.set('toJSON', {
     delete returnedObject.__v
   }
 })
-
 
 const Player = mongoose.model('Player', playerSchema)
 module.exports = Player
